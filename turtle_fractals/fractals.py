@@ -50,6 +50,44 @@ class KochCurve(Fractal):
     def __repr__(self):
         return 'Koch Curve'
 
+class SierpinskiTriangle(Fractal):
+    def setup(self, unit):
+        Fractal.setup(self, unit)
+        self.turtle.penup()
+        x = self.turtle.xcor() - unit
+        y = self.turtle.ycor() - (unit * 3 ** 0.5) / 2
+        self.turtle.setposition(x, y)
+        self.turtle.pendown()
+
+        # Draw outer triangle
+        self.turtle.left(60)
+        self.turtle.forward(unit*2)
+        self.turtle.right(120)
+        self.turtle.forward(unit*2)
+        self.turtle.right(120)
+        self.turtle.forward(unit*2)
+        self.turtle.backward(unit)
+        self.turtle.right(180)
+
+    def _recursive_draw(self, unit, iterations):
+        Fractal._recursive_draw(self, unit, iterations)
+        self.turtle.left(120)
+        self.turtle.forward(unit/2)
+        if iterations > 1: self._recursive_draw(unit/2, iterations-1)
+        self.turtle.forward(unit/2)
+        self.turtle.right(120)
+        self.turtle.forward(unit/2)
+        if iterations > 1: self._recursive_draw(unit/2, iterations-1)
+        self.turtle.forward(unit/2)
+        self.turtle.right(120)
+        self.turtle.forward(unit/2)
+        if iterations > 1: self._recursive_draw(unit/2, iterations-1)
+        self.turtle.forward(unit/2)
+        self.turtle.left(120)
+
+    def __repr__(self):
+        return 'Sierpiński\'s Triangle'
+
 class Circles(Fractal):
     def _recursive_draw(self, unit, iterations):
         Fractal._recursive_draw(self, unit, iterations)
@@ -106,13 +144,14 @@ def get_fractals(turtle):
     """Returns a list of instances of all fractal classes implemented in this module"""
     fractals = []
     fractals.append(KochCurve(turtle))
+    fractals.append(SierpinskiTriangle(turtle))
     fractals.append(Circles(turtle))
 
     # ^ Add new implemented fractals above this line ^
     return fractals
 
 if __name__ == '__main__':
-    fractal = KochCurve(turtle.Turtle())
+    fractal = SierpinskiTriangle(turtle.Turtle())
     fractal.draw(200, 2)
-    print(f'{fractal.elements} fractal elements')
+    print(f'{fractal.structures} fractal structures')
     input('Press ENTER to exit')
