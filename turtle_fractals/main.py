@@ -12,7 +12,7 @@ root.title('Turtle Fractals')
 window_height = 750
 canvas_width = window_height
 panel_width = 300
-panel_bg = 'lightblue'
+panel_bg = 'pink'
 
 # Add canvas and control panel
 canvas = tk.Canvas(root, width = canvas_width, height = window_height, cursor = 'crosshair')
@@ -88,6 +88,10 @@ def reset_canvas():
 
 draw_button.configure(command = draw_fractal)
 reset_button.configure(command = reset_canvas)
+
+# Create frame for making custom fractals using l-system
+
+
 
 # Run tkinter loop
 root.mainloop()

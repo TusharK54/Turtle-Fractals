@@ -2,13 +2,13 @@ import turtle
 from time import time
 
 class Fractal():
+    """Generates fractals using recursion"""
     def __init__(self, turtle):
         self.turtle = turtle
     
     def setup(self, unit):
         self.turtle.reset()
         self.structures = 0
-        self.distance = 0
 
     def draw(self, unit, iterations):
         self.setup(unit)
@@ -18,12 +18,6 @@ class Fractal():
 
     def _recursive_draw(self, unit, iterations):
         self.structures += 1
-        
-    def rotate_right(self, angle):
-        self.turtle.right(angle)
-
-    def rotate_left(self, angle):
-        self.turtle.left(angle)
 
     def __repr__(self):
         return self.__class__.__name__
@@ -140,6 +134,98 @@ class Circles(Fractal):
     def __repr__(self):
         return 'Recursive Circles'
 
+class LSystem(Fractal):
+    """Generates fractals using the Lindenmayer system"""
+    def __init__(self, turtle):
+        Fractal.__init__(self, turtle)
+        self.alphabet = []
+        self.functions = {}
+        self.rules = {}
+        self._axiom = ''
+        self._angle = 0
+
+        self.add_character('L', 'LEFT')
+        self.add_character('R', 'RIGHT')
+
+    def add_character(self, character, function, production_rule = None):
+        """Adds a character to the alphabet and defines its function and production rule"""
+        character = character.upper()
+        function = function.upper()
+        if production_rule != None: 
+            production_rule = production_rule.replace(' ', '').replace(',', '').upper()
+        
+        if character not in self.alphabet:
+            self.alphabet.append(character)
+        self.functions[character] = function
+        if production_rule != None:
+            self.rules[character] = production_rule
+        else:
+            self.rules[character] = character
+    
+    def axiom(self, string = None):
+        """Defines the axiom of the system; returns the axiom if no argument is provided"""
+        if string != None:
+            self._axiom = string.replace(' ', '').replace(',', '').upper()
+        return self._axiom
+
+    def angle(self, degrees = None):
+        """Defines the angle of rotation; returns the angle if no argument is provided"""
+        if degrees != None:
+            self._angle = degrees
+        return self._angle
+
+    def get_functions(self):
+        """Returns a list of function names implemented by this class"""
+        functions = []
+        functions.append('DRAW')
+        functions.append('MOVE')
+        functions.append('RIGHT')
+        functions.append('LEFT')
+        # ^ Add new implemented functions above this line ^
+        return functions
+
+    def draw(self, unit, iterations):
+        self.setup(unit)
+        start = time()
+        
+        # Draw the fractal using generated sequence
+        sequence = self._generate_sequence(iterations)
+        for character in sequence:
+            function = self.functions[character]
+            
+            # Define various functions
+            if   function == 'DRAW':
+                self.turtle.forward(unit)
+            elif function == 'MOVE':
+                self.turtle.penup()
+                self.turtle.forward(unit)
+                self.turtle.pendown()
+            elif function == 'RIGHT':
+                self.turtle.right(self._angle)
+            elif function == 'LEFT':
+                self.turtle.left(self._angle)
+            else:
+                print(f'Ignoring unknown function: {function}')
+
+        self.time_elapsed = time() - start
+
+    def _generate_sequence(self, iterations):
+        """Generates the fractal sequence using production rules for the given number of iterations"""
+        # TODO: center turtle using sequence
+        # x_min, x_max, y_min, y_max = self.turtle.xcor(), self.turtle.xcor(), self.turtle.ycor(),self.turtle.ycor()
+        sequence = self._axiom
+        for _ in range(iterations):
+            next_sequence = ''
+            for character in sequence:
+                next_sequence += self.rules[character]
+            sequence = next_sequence
+
+        # TODO: Add support for this (currently incorrect)
+        for character in sequence:
+            if self.functions[character] == 'DRAW':
+                self.structures += 1
+        return sequence
+
 def get_fractals(turtle):
     """Returns a list of instances of all fractal classes implemented in this module"""
     fractals = []
@@ -151,7 +237,14 @@ def get_fractals(turtle):
     return fractals
 
 if __name__ == '__main__':
-    fractal = SierpinskiTriangle(turtle.Turtle())
-    fractal.draw(200, 2)
+    tim = turtle.Turtle()
+    fractal = LSystem(tim)
+
+    fractal.add_character('A', 'draw', 'B r A r B')
+    fractal.add_character('B', 'draw', 'A l B l A')
+    fractal.axiom('A')
+    fractal.angle(60)
+
+    fractal.draw(7, 6)
     print(f'{fractal.structures} fractal structures')
     input('Press ENTER to exit')
