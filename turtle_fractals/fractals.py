@@ -1,13 +1,14 @@
+import turtle
 from time import time
 
 class Fractal():
     def __init__(self, turtle):
         self.turtle = turtle
-        self.elements = 0
-        self.distance = 0
     
     def setup(self, unit):
         self.turtle.reset()
+        self.structures = 0
+        self.distance = 0
 
     def draw(self, unit, iterations):
         self.setup(unit)
@@ -16,9 +17,8 @@ class Fractal():
         self.time_elapsed = time() - start
 
     def _recursive_draw(self, unit, iterations):
-        self.elements += 1
-        self.distance += unit
-
+        self.structures += 1
+        
     def rotate_right(self, angle):
         self.turtle.right(angle)
 
@@ -112,7 +112,6 @@ def get_fractals(turtle):
     return fractals
 
 if __name__ == '__main__':
-    import turtle
     fractal = KochCurve(turtle.Turtle())
     fractal.draw(200, 2)
     print(f'{fractal.elements} fractal elements')

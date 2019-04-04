@@ -27,12 +27,13 @@ turtle = RawTurtle(screen)
 
 # Create application variables
 speed = tk.IntVar()
-fractal = tk.StringVar()
+textbox_content = tk.StringVar()
+fractal_key = tk.StringVar()
 
 # Add fractal option menu widget
 fractal_list = {repr(f) : f for f in fractals.get_fractals(turtle)}
-fractal.set(list(fractal_list.values())[0])
-fractal_menu = tk.OptionMenu(panel, fractal, *list(fractal_list.values()))
+fractal_key.set(list(fractal_list.values())[0])
+fractal_menu = tk.OptionMenu(panel, fractal_key, *list(fractal_list.values()))
 fractal_menu.configure(anchor = 'center')
 tk.Label(panel, text = 'Fractal:', anchor = 'w', padx = 9).pack(fill = 'x')
 fractal_menu.pack(fill = 'x')
@@ -61,23 +62,23 @@ textbox_pad = 10
 textbox = tk.Frame(panel, width = panel_width, relief = 'groove', pady = textbox_pad, padx = textbox_pad, bg = panel_bg)
 textbox.pack(side = 'bottom', fill = 'x')
 
-textbox_label = tk.Label(textbox, anchor = 'center', relief = 'groove', text = '\nTurtle Fractal Drawer\nby Tushar Khan\n')
+textbox_label = tk.Label(textbox, anchor = 'center', relief = 'groove', text = '\nTurtle Fractal Drawer\n\nby Tushar Khan\n')
 textbox_label.pack(fill = 'x')
 
-# Define various textbox states
-def textbox_drawing():
-    content = '\nDrawing fractal...\n\n'
-    textbox_label.configure(text = content)
-
-def textbox_done():
-    content = f'\nDONE\nTime: {round(fractal_list[fractal.get()].time_elapsed, 10)} s\n'
-    textbox_label.configure(text = content)
+# Add tracer to textbox_content variable to change textbox in real time
+def update_textbox(*_):
+    textbox_label.configure(text = textbox_content.get())
+textbox_content.trace('w', update_textbox)
 
 # Define and configure button functions
 def draw_fractal():
-    fractal_list[fractal.get()].draw(size_scale.get(), iterations_scale.get())
+    textbox_content.set('\n\nDrawing fractal...\n\n')
+    fractal = fractal_list[fractal_key.get()]
+    fractal.draw(size_scale.get(), iterations_scale.get())
     screen.update()
-    textbox_done()
+    textbox_content.set(f'''\nDONE
+in {round(fractal.time_elapsed, 10)} s
+{fractal.structures} fractal structure{'s' if fractal.structures > 1 else ''}\n''')
     draw_button.configure(state = 'normal')
 
 def reset_canvas():
