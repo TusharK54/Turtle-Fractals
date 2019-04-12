@@ -47,3 +47,5 @@ Iteration | String
 1 | F L F R R F L F
 2 | F L F R R F L F L F L F R R F L F R R F L F R R F L F L F L F R R F L F
 3 | F L F R R F L F L F L F R R F L F R R F L F R R F L F L F L F R R F L F L F L F R R F L F L F L F R R F L F R R F L F R R F L F L F L F R R F L F R R F L F R R F L F L F L F R R F L F R R F L F R R F L F L F L F R R F L F L F L F R R F L F L F L F R R F L F R R F L F R R F L F L F L F R R F L F
+
+![Koch Curve iteration 0](images/Koch Curve/koch_0.png)
