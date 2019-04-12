@@ -39,13 +39,12 @@ F | F L F R R F L F | DRAW
 L | L | LEFT
 R | R | RIGHT
 
-Expanding the axiom using the production rules produces the following set of exponentially growing strings:
+Expanding the axiom using the production rules produces the following set of exponentially growing strings, and the corresponding fractals as drawn by the turtle:
 
-Iteration | String
-:--------:|---------
-0 | F
-1 | F L F R R F L F
-2 | F L F R R F L F L F L F R R F L F R R F L F R R F L F L F L F R R F L F
-3 | F L F R R F L F L F L F R R F L F R R F L F R R F L F L F L F R R F L F L F L F R R F L F L F L F R R F L F R R F L F R R F L F L F L F R R F L F R R F L F R R F L F L F L F R R F L F R R F L F R R F L F L F L F R R F L F L F L F R R F L F L F L F R R F L F R R F L F R R F L F L F L F R R F L F
-
-![Koch Curve iteration 0](images/Koch Curve/koch_0.png)
+Iteration | String | Fractal
+:--------:|--------|:------:
+0 | F | <img src="/images/Koch%20Curve/koch_0.png" width="600">
+1 | F L F R R F L F | <img src="/images/Koch%20Curve/koch_1.png" width="600">
+2 | F L F R R F L F L F L F R R F L F R R F L F R R F L F L F L F R R F L F | <img src="/images/Koch%20Curve/koch_2.png" width="600">
+3 | F L F R R F L F L F L F R R F L F R R F L F R R F L F L F L F R R F L F L F L F R R F L F L F L F R R F L F R R F L F R R F L F L F L F R R F L F R R F L F R R F L F L F L F R R F L F R R F L F R R F L F L F L F R R F L F L F L F R R F L F L F L F R R F L F R R F L F R R F L F L F L F R R F L F | <img src="/images/Koch%20Curve/koch_3.png" width="400">
+4 | . . . | <img src="/images/Koch%20Curve/koch_4.png" width="400">
