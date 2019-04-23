@@ -4,14 +4,20 @@ from time import time
 
 class LFractal():
     """Generates fractals using the Lindenmayer system"""
-    def __init__(self, turtle):
-        self.turtle = turtle
-        self.turtle.reset()
+    def __init__(self):
         self.alphabet = []
         self.functions = {}
         self.rules = {}
         self._axiom = ''
         self._angle = 0
+
+    def get_tuple(self):
+        """Returns the properties of the fractal as a tuple"""
+        return (self.alphabet, self.functions, self.rules, self._axiom, self._angle)
+
+    def load_tuple(self, tuple_):
+        """Loads the properties of the fractal from a tuple"""
+        self.alphabet, self.functions, self.rules, self._axiom, self._angle = tuple_
 
     def add_character(self, character, function = '', production_rule = None):
         """Adds a character to the alphabet and defines its function and production rule"""
@@ -36,8 +42,9 @@ class LFractal():
             self._angle = degrees
         return self._angle
 
-    def draw(self, size, iterations):
+    def draw(self, turtle, size, iterations):
         """Draws the fractal for the given number of iterations"""
+        self.turtle = turtle
         self.turtle.reset()
         self.structures = 0
         start = time()
@@ -109,22 +116,20 @@ class LFractal():
 
         self.time_elapsed = time() - start
 
-    @staticmethod
-    def get_functions():
-        """Returns a list of function names implemented by this class"""
-        functions = []
-        functions.append('DRAW')
-        functions.append('MOVE')
-        functions.append('RIGHT')
-        functions.append('LEFT')
-        functions.append('SAVE POS')
-        functions.append('LOAD POS')
-        # ^ Add new implemented functions above this line ^
-        return functions
+def symbol_functions():
+    """Returns a list of symbol function names implemented by the LFractal class"""
+    functions = []
+    functions.append('DRAW')
+    functions.append('MOVE')
+    functions.append('RIGHT')
+    functions.append('LEFT')
+    functions.append('SAVE POS')
+    functions.append('LOAD POS')
+    # ^ Add new implemented functions above this line ^
+    return functions
 
 if __name__ == '__main__':
-    tim = turtle.Turtle()
-    fractal = LFractal(tim)
+    fractal = LFractal()
 
     fractal.add_character('F', 'draw', 'F F + [ + F - F - F ] - [ - F + F + F ]')
     fractal.add_character('+', 'right')
@@ -133,7 +138,8 @@ if __name__ == '__main__':
     fractal.add_character(']', 'load pos')
     fractal.axiom('F')
     fractal.angle(25)
-
-    fractal.draw(10, 3)
+    
+    tim = turtle.Turtle()
+    fractal.draw(tim, 10, 3)
     print(f'{fractal.structures} fractal structures')
     input('Press ENTER to exit')

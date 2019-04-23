@@ -1,8 +1,9 @@
 import tkinter as tk
-from turtle import RawTurtle, TurtleScreen
-from time import time
 
-import turtle_fractals
+from os import listdir
+from json import dump, load
+from turtle import RawTurtle, TurtleScreen
+from fractals import LFractal, symbol_functions
 
 """
 Project started on April 1, 2019
@@ -27,45 +28,16 @@ panel.pack_propagate(False)
 screen = TurtleScreen(canvas)
 turtle = RawTurtle(screen)
 
-# Load fractals into a dictionary
-fractal_dict = {} # TODO: Extract from file
-    # TEMP BELOW
-k_curve = turtle_fractals.LFractal(turtle)
-k_curve.add_character('F', 'draw', 'F L F R R F L F')
-k_curve.add_character('R', 'right')
-k_curve.add_character('L', 'left')
-k_curve.axiom('F rr F rr F rr')
-k_curve.angle(60)
-fractal_dict['Koch Snowflake'] = k_curve
+# Load fractals from save files into a dictionary
+saved_fractals_dir = 'saved_fractals'
+fractal_dict = {}
+for file in listdir(saved_fractals_dir):
+    if file.endswith('.txt'):
+        with open(saved_fractals_dir + '/' + file) as f:
+            fractal_tuple = tuple(load(f))
+            fractal_dict[file[:-len('.txt')]] = fractal_tuple
 
-triangle = turtle_fractals.LFractal(turtle)
-triangle.add_character('F', 'draw', 'F L G R F R G L F')
-triangle.add_character('G', 'draw', 'GG')
-triangle.add_character('R', 'right')
-triangle.add_character('L', 'left')
-triangle.axiom('F l G l G')
-triangle.angle(120)
-fractal_dict['Sierpinski Triangle'] = triangle
-
-dragon = turtle_fractals.LFractal(turtle)
-dragon.add_character('X', production_rule = 'X R Y F R')
-dragon.add_character('Y', production_rule = 'L F X L Y')
-dragon.add_character('F', 'draw')
-dragon.add_character('R', 'right')
-dragon.add_character('L', 'left')
-dragon.axiom('F X')
-dragon.angle(90)
-fractal_dict['Dragon Curve'] = dragon
-
-cantor = turtle_fractals.LFractal(turtle)
-cantor.add_character('A', 'draw', 'A B A')
-cantor.add_character('B', 'move', 'B B B')
-cantor.add_character('S', 'save pos')
-cantor.add_character('L', 'load pos')
-cantor.axiom('A')
-fractal_dict['Cantor Set'] = cantor
-    # TEMP ABOVE
-fractal = turtle_fractals.LFractal(turtle)
+fractal = LFractal()
 
 # Add fractal editor frame
 editor_pad = 5
@@ -100,16 +72,16 @@ angle_var = tk.IntVar()
 alphabet_entry = tk.Entry(editor_frame, textvariable = alphabet_var)
 axiom_entry = tk.Entry(editor_frame, textvariable = axiom_var)
 angle_label = tk.Label(editor_frame, textvariable = angle_var, anchor = 'w', padx = label_pad, relief = 'sunken')
-angle_scale = tk.Scale(editor_frame, orient = 'horizontal', from_ = -180, to = 180, resolution = 5, variable = angle_var, showvalue = 0)
+angle_scale = tk.Scale(editor_frame, orient = 'horizontal', from_ = 0, to = 179, resolution = 1, variable = angle_var, showvalue = 0)
 alphabet_entry.grid(row = 2, column = 1, columnspan = 2, sticky = 'nsew')
 axiom_entry.grid(row = 3, column = 1, columnspan = 2, sticky = 'nsew')
 angle_label.grid(row = 4, column = 1, sticky = 'nsew')
 angle_scale.grid(row = 4, column = 2, sticky = 'ew')
 
 # Add production rule rows for each character
-rule_rows = 10
 production_rules = []
 def update_rules_box(*_):
+    rule_rows = 10
     production_rules.clear()
     alphabet = alphabet_entry.get().replace(' ', '').replace(',', '')
     for i in range(rule_rows):
@@ -123,7 +95,7 @@ def update_rules_box(*_):
         production_rules.append({'char' : char_var, 'function' : function_var, 'rule' : rule_var})
 
         # Add function option menu
-        function_list = turtle_fractals.LFractal.get_functions()
+        function_list = symbol_functions()
         function_menu = tk.OptionMenu(editor_frame, function_var, *function_list)
         function_menu.grid(row = 7 + i, column = 0, sticky = 'nsew')
 
@@ -136,7 +108,6 @@ def update_rules_box(*_):
         rule_entry.grid(row = 7 + i, column = 2, sticky = 'nsew')
 
 update_rules_box()
-
 
 # Add scale widgets
 speed_var = tk.IntVar()
@@ -178,14 +149,16 @@ def draw_fractal():
     draw_button.configure(state = 'disabled')
     
     # Generate fractal
-    fractal = turtle_fractals.LFractal(turtle)
+    fractal = LFractal()
     fractal.axiom(axiom_var.get())
     fractal.angle(angle_var.get())
     for elem in production_rules:
         fractal.add_character(elem['char'].get(), elem['function'].get(), elem['rule'].get())
 
+    #TODO: pre-compile fractal
+
     # Draw fractal
-    fractal.draw(size_scale.get(), iterations_scale.get())
+    fractal.draw(turtle, size_scale.get(), iterations_scale.get())
     screen.update()
 
     textbox_var.set(f'Done in {round(fractal.time_elapsed, 10)} s')
@@ -209,15 +182,32 @@ save_image_button.configure(command = save_image)
 
 # Add tracer functions
 def load_fractal(*_):
-    global fractal
-    fractal = fractal_dict[fractal_var.get()]
+    fractal.load_tuple(fractal_dict[fractal_var.get()])
     alphabet_var.set(fractal.alphabet)
     axiom_var.set(' '.join(fractal.axiom()))
     angle_var.set(fractal.angle())
     update_rules_box()
 fractal_var.trace_add('write', load_fractal)
 
-alphabet_var.trace_add('write', update_rules_box)
+def update_alphabet(*_):
+    alphabet = alphabet_entry.get().replace(' ', '').replace(',', '')
+    new_alphabet = []
+    next_open_row = production_rules[0]
+    for row in production_rules:
+        character = row['char'].get()
+        if len(character) == 0:
+            next_open_row = row
+            break
+        if character in alphabet:
+            alphabet.replace(character, '')
+            new_alphabet.append(character)
+        else:               # character removed
+            production_rules.remove(row)
+    if len(alphabet) > 0:   # character added
+        new_alphabet.append(alphabet)
+        next_open_row['char'] = alphabet
+    alphabet_var.set(new_alphabet)
+#alphabet_var.trace_add('write', update_alphabet)
 
 def adjust_speed(*_):
     screen.tracer(speed_var.get(), 10)
