@@ -51,21 +51,22 @@ class LFractal():
             self._angle = degrees
         return self._angle
 
-    def draw(self, turtle, size : int, iterations : int):
+    def draw(self, turtle, size : int, iterations : int, max_sequence = 2000000):
         """Draws the fractal for the given number of iterations"""
         self.turtle = turtle
         self.turtle.reset()
         self.turtle.active = True
-        self.structures = 0
         start = time()
         
         # Generate fractal sequence
-        sequence = self._axiom
+        self.sequence = self._axiom
         for _ in range(iterations):
             next_sequence = ''
-            for character in sequence:
+            for character in self.sequence:
                 next_sequence += self.rules[character]
-            sequence = next_sequence
+                if len(next_sequence) > max_sequence:
+                    raise Exception(f'Fractal sequence exceeded maximum of {max_sequence} characters')
+            self.sequence = next_sequence
 
         # Center turtle using generated sequence; relatively fast algorithm
         sim_x, sim_y = self.turtle.xcor(), self.turtle.ycor()
@@ -73,7 +74,7 @@ class LFractal():
         sim_pos_stack = []
         min_x = max_x = sim_x
         min_y = max_y = sim_y
-        for character in sequence:
+        for character in self.sequence:
             function = self.functions[character]
             if function == 'DRAW' or function =='MOVE':
                 sim_x = sim_x + round(size * cos(radians(sim_heading)), 10)
@@ -105,10 +106,10 @@ class LFractal():
 
         # Draw fractal using generated sequence
         position_stack = []
-        for character in sequence:
+        for character in self.sequence:
             if not self.turtle.active:
-                self.turtle.active = True
-                break
+                self.turtle.reset()
+                raise Exception('Fractal generation forcibly stopped')
             
             function = self.functions[character]
             if   function == 'DRAW':
@@ -155,5 +156,4 @@ if __name__ == '__main__':
     
     tim = turtle.Turtle()
     fractal.draw(tim, 10, 3)
-    print(f'{fractal.structures} fractal structures')
     input('Press ENTER to exit')

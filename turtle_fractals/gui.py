@@ -4,6 +4,7 @@ from os import listdir
 from json import dump, load
 from turtle import RawTurtle, TurtleScreen
 from fractals import LFractal, symbol_functions
+import random
 
 """
 Project started on April 1, 2019
@@ -20,20 +21,21 @@ class Window():
 
         label_pad = 5
         editor_pad = 5
-        textbox_pad = 0
+        textbox_outside_pad = 0
+        textbox_inside_pad = 5
         rule_rows = 10
         
         # Create top-level window and add canvas and control panel
         root = tk.Tk()
         root.title('Turtle Fractals')
-        canvas = tk.Canvas(root, width = canvas_width, height = window_height, cursor = 'crosshair')
+        self.canvas = tk.Canvas(root, width = canvas_width, height = window_height, cursor = 'crosshair')
         panel = tk.Frame(root, width = panel_width, height = window_height)
-        canvas.pack(side = 'left', fill = 'both', expand = True)
+        self.canvas.pack(side = 'left', fill = 'both', expand = True)
         panel.pack(side = 'right', fill = 'y', expand = False)
         panel.pack_propagate(False)
 
         # Create turtle objects
-        self.screen = TurtleScreen(canvas)
+        self.screen = TurtleScreen(self.canvas)
         self.turtle = RawTurtle(self.screen)
 
         # Load fractals from save files into a dictionary
@@ -137,13 +139,14 @@ class Window():
         self.save_image_button.grid(row = 1, column = 1, sticky = 'nsew')
         
         # Add text box
-        textbox_frame = tk.Frame(panel, pady = textbox_pad, padx = textbox_pad)
+        textbox_bg = '#dddddd'
+        textbox_frame = tk.Frame(panel, pady = textbox_outside_pad, padx = textbox_outside_pad, bg = textbox_bg)
         textbox_frame.pack(side = 'bottom', fill = 'both', expand = True)
         self.textbox_var = tk.StringVar()
         self.textbox_var.set('Turtle Fractal Drawer')
-        textbox_label = tk.Label(textbox_frame, width = panel_width, relief = 'groove', textvariable = self.textbox_var)
-        self.textbox_var.trace_add('write', callback = lambda *_ : textbox_label.configure(text = self.textbox_var.get()))
-        textbox_label.pack(side = 'bottom', fill = 'both', expand = True)
+        self.textbox_label = tk.Label(textbox_frame, width = panel_width, relief = 'groove', font=('Fixedsys', 7), textvariable = self.textbox_var, wraplength = panel_width - textbox_inside_pad, fg = 'black', bg = textbox_bg)
+        self.textbox_var.trace_add('write', callback = lambda *_ : self.textbox_label.configure(text = self.textbox_var.get()))
+        self.textbox_label.pack(side = 'bottom', fill = 'both', expand = True)
 
         # Run tkinter loop
         root.mainloop()
@@ -175,14 +178,34 @@ class Window():
         return fractal
 
     def _draw_fractal(self):
+        self.textbox_label.configure(fg = 'black')
         self.textbox_var.set('Drawing fractal...')
         self.draw_button.configure(state = 'disabled')
         
         fractal = self._generate_fractal()
-        fractal.draw(self.turtle, self.size_scale.get(), self.iterations_scale.get())
-        self.screen.update()
+        if self.alphabet_var.get() == '':
+            self.textbox_label.configure(fg = 'orange')
+            self.textbox_var.set(f'INVALID: Alphabet not defined')
+        elif self.axiom_var.get() == '':
+            self.textbox_label.configure(fg = 'orange')
+            self.textbox_var.set(f'INVALID: Axiom not defined')
+        else:
+            self.canvas.unbind('<ButtonPress-1>')
+            self.canvas.unbind('<B1-Motion>')
+            self.canvas.unbind('<MouseWheel>')
+            try:
+                fractal.draw(self.turtle, self.size_scale.get(), self.iterations_scale.get())
+            except Exception as e:
+                self.textbox_label.configure(fg = 'red')
+                self.textbox_var.set(f'ERROR: {e}')
+            else:
+                self.textbox_label.configure(fg = 'green')
+                self.textbox_var.set(f'Done in {round(fractal.time_elapsed, 8)} sec\n{len(fractal.sequence)} character sequence')
+            self.canvas.bind('<ButtonPress-1>', self._scroll_start)
+            self.canvas.bind('<B1-Motion>', self._scroll_move)
+            self.canvas.bind('<MouseWheel>', self._mouse_scroll)
 
-        self.textbox_var.set(f'Done in {round(fractal.time_elapsed, 10)} s')
+        self.screen.update()
         self.draw_button.configure(state = 'normal')
 
     # TODO: IMPROVE
@@ -249,6 +272,19 @@ class Window():
         entry.delete(0, tk.END)
         entry.insert(0, ''.join(entry_text))
         entry.icursor(index)
+
+    def _scroll_start(self, event):
+        self.canvas.scan_mark(event.x, event.y)
+        print('scroll start')
+
+    def _scroll_move(self, event):
+        self.canvas.scan_dragto(event.x, event.y, gain=1)
+        print('scroll move')
+        self.screen.screensize(1000, 1000)
+
+    def _mouse_scroll(self, event):
+        amount = 0.9 if event.delta < 0 else 1.1
+        self.canvas.scale(tk.ALL, 0, 0, amount, amount)
 
 if __name__ == '__main__':
     gui = Window()
