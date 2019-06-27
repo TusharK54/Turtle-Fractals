@@ -198,41 +198,42 @@ class Window():
 
     # TODO: IMPROVE
     def _update_alphabet(self, *_):
-        current_alphabet = [prod_rule['char'].get() for prod_rule in self.production_rules if prod_rule['char'].get() is not '']
-        new_alphabet = self.alphabet_entry.get().replace(' ', '').upper()
-        current_alphabet_set = set(current_alphabet)
-        new_alphabet_set = set(new_alphabet)
-
+        # Create valid alphabet from entry
         valid_chars = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
                        'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'}
+        new_alphabet = list(dict.fromkeys([char for char in self.alphabet_entry.get().upper() if char in valid_chars]))
 
-        # Invalid or duplicate characters
-        if len(new_alphabet_set - valid_chars) > 0 or len(new_alphabet_set) == len(current_alphabet_set):
-            index = self.alphabet_entry.index(tk.INSERT)
-            self.alphabet_entry.delete(0, tk.END)
-            self.alphabet_entry.insert(0, ' '.join(current_alphabet))
-            self.alphabet_entry.icursor(index)
+        # Format alhpabet entry
+        index = self.alphabet_entry.index(tk.INSERT)
+        self.alphabet_entry.delete(0, tk.END)
+        self.alphabet_entry.insert(0, ' '.join(new_alphabet))
+        self.alphabet_entry.icursor(index)
 
-        # Inserted a character
-        elif current_alphabet_set.issubset(new_alphabet_set):
-            self.alphabet_entry.delete(0, tk.END)
-            self.alphabet_entry.insert(0, ' '.join(new_alphabet))
-            if len(current_alphabet_set) < len(self.production_rules):
-                index = new_alphabet.index((new_alphabet_set - current_alphabet_set).pop())
-                for i in range(len(self.production_rules)-1, index, -1):
-                    self.production_rules[i]['char'].set(self.production_rules[i-1]['char'].get())
-                    self.production_rules[i]['function'].set(self.production_rules[i-1]['function'].get())
-                    self.production_rules[i]['rule'].set(self.production_rules[i-1]['rule'].get())
-                self.production_rules[index]['char'].set((new_alphabet_set - current_alphabet_set).pop())
-                self.production_rules[index]['rule'].set((new_alphabet_set - current_alphabet_set).pop())
+        # Update production rules
+        previous_rules = {}
+        for i in range(len(self.production_rules)):
+            character = self.production_rules[i]['char'].get()
+            if character == '':
+                break
+            else:
+                function = self.production_rules[i]['function'].get()
+                rule = self.production_rules[i]['rule'].get()
+                previous_rules[character] = (function, rule)
+                self.production_rules[i]['char'].set('')
+                self.production_rules[i]['function'].set('')
+                self.production_rules[i]['rule'].set('')
 
-        # Removed a character
-        elif new_alphabet_set.issubset(current_alphabet_set):
-            index = current_alphabet.index((current_alphabet_set - new_alphabet_set).pop())
-            for i in range(index, len(self.production_rules)-1):
-                self.production_rules[i]['char'].set(self.production_rules[i+1]['char'].get())
-                self.production_rules[i]['function'].set(self.production_rules[i+1]['function'].get())
-                self.production_rules[i]['rule'].set(self.production_rules[i+1]['rule'].get())
+        for i in range(min(len(new_alphabet), len(self.production_rules))):
+            character = new_alphabet[i]
+            self.production_rules[i]['char'].set(character)
+            if character in previous_rules:
+                self.production_rules[i]['function'].set(previous_rules[character][0])
+                self.production_rules[i]['rule'].set(previous_rules[character][1])
+            else:
+                self.production_rules[i]['rule'].set(character)
+                self.alphabet_entry.icursor(index + 1)
+
+    
 
 if __name__ == '__main__':
     gui = Window()
