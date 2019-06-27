@@ -55,6 +55,7 @@ class LFractal():
         """Draws the fractal for the given number of iterations"""
         self.turtle = turtle
         self.turtle.reset()
+        self.turtle.active = True
         self.structures = 0
         start = time()
         
@@ -105,6 +106,10 @@ class LFractal():
         # Draw fractal using generated sequence
         position_stack = []
         for character in sequence:
+            if not self.turtle.active:
+                self.turtle.active = True
+                break
+            
             function = self.functions[character]
             if   function == 'DRAW':
                 self.turtle.forward(unit)
@@ -128,12 +133,12 @@ class LFractal():
 def symbol_functions() -> list:
     """Returns a list of symbol function names implemented by the LFractal class"""
     functions = []
-    functions.append('DRAW')
-    functions.append('MOVE')
-    functions.append('RIGHT')
-    functions.append('LEFT')
-    functions.append('SAVE POS')
-    functions.append('LOAD POS')
+    functions.append(LFractal.DRAW)
+    functions.append(LFractal.MOVE)
+    functions.append(LFractal.RIGHT)
+    functions.append(LFractal.LEFT)
+    functions.append(LFractal.SAVE)
+    functions.append(LFractal.LOAD)
     # ^ Add new implemented functions above this line ^
     return functions
 

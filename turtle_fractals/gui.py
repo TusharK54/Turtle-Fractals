@@ -73,12 +73,13 @@ class Window():
         # Add general editor entry and spinboxes
         self.alphabet_var = tk.StringVar()
         self.alphabet_entry = tk.Entry(self.editor_frame, textvariable = self.alphabet_var)
-        self.alphabet_var.trace_add('write', callback = self._update_alphabet)
+        self.alphabet_var.trace_add('write', callback = self._update_alphabet_entry)
         self.alphabet_entry.grid(row = 2, column = 1, columnspan = 2, sticky = 'nsew')
 
         self.axiom_var = tk.StringVar()
-        axiom_entry = tk.Entry(self.editor_frame, textvariable = self.axiom_var)
-        axiom_entry.grid(row = 3, column = 1, columnspan = 2, sticky = 'nsew')
+        self.axiom_entry = tk.Entry(self.editor_frame, textvariable = self.axiom_var)
+        self.axiom_var.trace_add('write', callback = lambda *_ : self._update_entry(self.axiom_entry, self.axiom_var, _))
+        self.axiom_entry.grid(row = 3, column = 1, columnspan = 2, sticky = 'nsew')
 
         self.angle_var = tk.IntVar()
         angle_label = tk.Label(self.editor_frame, textvariable = self.angle_var, anchor = 'w', padx = label_pad, relief = 'sunken')
@@ -106,6 +107,7 @@ class Window():
 
             # Add production rule entry box
             rule_entry = tk.Entry(self.editor_frame, textvariable = rule_var)
+            rule_var.trace_add('write', callback = lambda *_ : self._update_entry(rule_entry, rule_var, _))
             rule_entry.grid(row = 7 + i, column = 2, sticky = 'nsew')
 
         # Add scale widgets
@@ -126,7 +128,7 @@ class Window():
         button_frame.columnconfigure(1, weight = 1, minsize = 2/2)
 
         self.draw_button = tk.Button(button_frame, text = 'Generate', command = self._draw_fractal)
-        self.reset_button = tk.Button(button_frame, text = 'Reset', command = lambda : self.screen.resetscreen())
+        self.reset_button = tk.Button(button_frame, text = 'Reset', command = self._reset_fractal)
         self.save_fractal_button = tk.Button(button_frame, text = 'Save Fractal', command = self._save_fractal)
         self.save_image_button = tk.Button(button_frame, text = 'Save Image', command = self._save_image)
         self.draw_button.grid(row = 0, column = 0, sticky = 'nsew')
@@ -172,18 +174,21 @@ class Window():
             fractal.add_character(elem['char'].get(), elem['function'].get(), elem['rule'].get())
         return fractal
 
-    # TODO: IMPROVE
     def _draw_fractal(self):
         self.textbox_var.set('Drawing fractal...')
         self.draw_button.configure(state = 'disabled')
         
         fractal = self._generate_fractal()
-        #TODO: pre-compile fractal
         fractal.draw(self.turtle, self.size_scale.get(), self.iterations_scale.get())
         self.screen.update()
 
         self.textbox_var.set(f'Done in {round(fractal.time_elapsed, 10)} s')
         self.draw_button.configure(state = 'normal')
+
+    # TODO: IMPROVE
+    def _reset_fractal(self):
+        self.turtle.active = False
+        self.screen.reset()
 
     # TODO: IMPROVE
     def _save_fractal(self):
@@ -197,11 +202,11 @@ class Window():
         self.textbox_var.set('Saved image as frac.eps')
 
     # TODO: IMPROVE
-    def _update_alphabet(self, *_):
+    def _update_alphabet_entry(self, *_):
         # Create valid alphabet from entry
         valid_chars = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
                        'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'}
-        new_alphabet = list(dict.fromkeys([char for char in self.alphabet_entry.get().upper() if char in valid_chars]))
+        new_alphabet = list(dict.fromkeys([char for char in self.alphabet_var.get().upper() if char in valid_chars]))
 
         # Format alhpabet entry
         index = self.alphabet_entry.index(tk.INSERT)
@@ -233,7 +238,17 @@ class Window():
                 self.production_rules[i]['rule'].set(character)
                 self.alphabet_entry.icursor(index + 1)
 
-    
+    # TODO: IMPROVE
+    def _update_entry(self, entry : tk.Entry, var : tk.StringVar, *_):
+        # Create valid axiom from entry
+        valid_chars = set([char.upper() for char in self.alphabet_entry.get().replace(' ', '')])
+        entry_text = list([char for char in var.get().upper() if char in valid_chars])
+
+        # Format axiom entry
+        index = entry.index(tk.INSERT)
+        entry.delete(0, tk.END)
+        entry.insert(0, ''.join(entry_text))
+        entry.icursor(index)
 
 if __name__ == '__main__':
     gui = Window()
