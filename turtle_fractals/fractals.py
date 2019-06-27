@@ -4,6 +4,15 @@ from time import time
 
 class LFractal():
     """Generates fractals using the Lindenmayer system"""
+
+    # Define symbol functions
+    DRAW    = 'DRAW'
+    MOVE    = 'MOVE'
+    RIGHT   = 'RIGHT'
+    LEFT    = 'LEFT'
+    SAVE    = 'SAVE'
+    LOAD    = 'LOAD'
+
     def __init__(self):
         self.alphabet = []
         self.functions = {}
@@ -11,15 +20,15 @@ class LFractal():
         self._axiom = ''
         self._angle = 0
 
-    def get_tuple(self):
+    def get_tuple(self) -> tuple:
         """Returns the properties of the fractal as a tuple"""
         return (self.alphabet, self.functions, self.rules, self._axiom, self._angle)
 
-    def load_tuple(self, tuple_):
+    def load_tuple(self, tuple_ : tuple):
         """Loads the properties of the fractal from a tuple"""
         self.alphabet, self.functions, self.rules, self._axiom, self._angle = tuple_
 
-    def add_character(self, character, function = '', production_rule = None):
+    def add_character(self, character : str, function = '', production_rule = None):
         """Adds a character to the alphabet and defines its function and production rule"""
         character = character.upper()
         function = function.upper()
@@ -42,7 +51,7 @@ class LFractal():
             self._angle = degrees
         return self._angle
 
-    def draw(self, turtle, size, iterations):
+    def draw(self, turtle, size : int, iterations : int):
         """Draws the fractal for the given number of iterations"""
         self.turtle = turtle
         self.turtle.reset()
@@ -116,7 +125,7 @@ class LFractal():
 
         self.time_elapsed = time() - start
 
-def symbol_functions():
+def symbol_functions() -> list:
     """Returns a list of symbol function names implemented by the LFractal class"""
     functions = []
     functions.append('DRAW')
