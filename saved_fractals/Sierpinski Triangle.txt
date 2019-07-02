@@ -1,1 +1,0 @@
-[["L", "R", "G", "F"], {"F": "DRAW", "G": "DRAW", "R": "RIGHT", "L": "LEFT"}, {"F": "FLGRFRGLF", "G": "GG", "R": "R", "L": "L"}, "FLGLG", 120]
