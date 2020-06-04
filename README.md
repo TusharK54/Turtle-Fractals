@@ -1,5 +1,7 @@
-# Turtle-Fractals
+# Turtle Fractals
 This program generates fractals using a grammar system developed in 1968 by Aristid Lindenmayer called the Lindenmayer system (L-system), and displays them on the screen using turtle graphics.
+
+Run the program with `python app`.
 
 ## L-Systems
 L-systems are a type of formal grammar that expand a string using a set of production rules. Their recursive nature leads to self-similarity in the string, which is key to generating fractals.
