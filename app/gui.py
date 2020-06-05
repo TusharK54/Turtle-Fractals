@@ -1,10 +1,11 @@
 import tkinter as tk
 
-from os import listdir, path
+from os import listdir, path, remove
 from json import dump, load
 from turtle import RawTurtle, TurtleScreen
 from fractals import LFractal, symbol_functions
-import random
+from PIL import Image
+import random, datetime
 
 """
 Project started on April 1, 2019
@@ -283,10 +284,21 @@ class Window():
         self.save_button1.configure(text = 'Done', command = lambda : self._save_fractal(overwrite = False))
         self.save_button2.configure(text = 'Cancel', command = self.save_popup.destroy)
 
-    # TODO: IMPROVE
     def _save_image(self):
-        self.screen.getcanvas().postscript(file = 'frac.eps')
-        self.textbox_var.set('Saved image as frac.eps')
+        image_id = datetime.datetime.now().strftime('%m%d%y_%H.%M.%S.%f')[:-4]
+        image_eps = f'images/frac_{image_id}.eps'
+        image_png = f'images/frac_{image_id}.png'
+
+        self.screen.getcanvas().postscript(file=image_eps)
+
+        try:
+            im = Image.open(image_eps).convert('RGBA')
+            im.save(image_png, lossless=True)
+        except OSError:
+            self.textbox_var.set(f'Saved image as:\n{image_eps}\nConfigure Ghostscipt to save as PNG')
+        else:
+            remove(image_eps)
+            self.textbox_var.set(f'Saved image as:\n{image_png}')
 
     # TODO: IMPROVE
     def _update_alphabet_entry(self, *_):
